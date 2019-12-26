@@ -37,7 +37,7 @@ package Arquitectura;
     our @otras    = ();
     our $cosa   = '';
     our @pila = ();
-    our %hash_param = {};
+    our %hash_param = ();
     
 
     # las variables léxicas privadas del archivo van aquí, antes que las funciones que las usan
