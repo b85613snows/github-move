@@ -1,15 +1,11 @@
-###########################################################
+#################################################
 # ORATOP 
 # Version 1.00 OCTUBER 2017
 # AUTHOR: Gustavo Mayordomo (83885613@es.ibm.com)
 # GROUP:  Grupo Bases de datos torre 1
-# #########################################################
-# @MOD 1.2 26dic2109. Modification to get oracle_sid by GUI.
-# oratab file is read to show the different SID that can 
-# be choosen
-###########################################################
-use Term::ReadKey;
+# ###############################################
 use lib './libs/';
+use Term::ReadKey;
 use Arquitectura;
 use Switch;
 use Query;
@@ -40,7 +36,7 @@ my $ret_code=0;
 
  my $oracle_server="";
  my $oracle_listener="";
- my $oracle_sid="";
+ my $oracle_sid=$ARGV[0];
  my $oracle_port="";
  my $oracle_user="oracle";
  my $oracle_password="";
@@ -49,25 +45,6 @@ my $ret_code=0;
  my $retardo=7.0;
  my $filtro="";
  my $schema="";
-
- ###  @MOD 1.2 26dic2109
-
-my $ficora="/etc/oratab";
-my $cont=1;
-my $linea="";
-my $orainst="";
-my $bas="";
-my %instance=();
-my $v=1;
-my $cad="";
-my $cab = " SELECT INSTANCE   ";
-my $pie = " SELECT NUMBER  (q) for exit    ";
-my $usuario="";
-my $contrasena="";
-
-### END @MOD 1.2 26dic2109
-
-
 
  sub opcion_nok {
 
@@ -187,91 +164,11 @@ if ($option{D}) {
                    }
 
 
-###  @MOD 1.2 26dic2109
 
 
-if  (! -e $ficora ) {             ## its not oracle
-                    print "ERROR. There is no oratabl file \n";
-                    exit 8;
-                    }
-
-open(INPUT,"< $ficora") or die "Couldn't open File $ficora  \n";
-
-
-
-while (defined ($linea = <INPUT>)) {
-      chomp($linea);
-      $linea=trim($linea);
-      if ((substr($linea,0,1)) =~ /^[a-zA-Z]/)  {                   ## cleaning blanks and comments
-                       ($orainst,$bas)=split(':',$linea);
-                        $instance{$cont} = $orainst;
-                        print "instancia  $orainst \n";
-                        $cont++;
-                                    }
-                                   }
-close INPUT;
-
-$retardo=3.0;
-
-init();           # Initialize Term::Cap.
-clear_screen();
-
-gotoxy(50,3);
-
-imprime_color(BLUE, "$cab");
-$v=$v+3;
-
-
-  foreach  $orainst (keys %instance){
-     gotoxy(40,$v);
-     $v++;
-     $cad="  " . $orainst . ".  " . $instance{$orainst} . "\n";
-     imprime_color(YELLOW, "$cad");
-                                      }
-$v=$v+3;
-gotoxy(50,$v);
-imprime_color(WHITE, "$pie");
-
-ReadMode 4;  # turn off control keys
-
- while ( $char ne 'q' ) {
-
-   while (not defined ($char = ReadKey($retardo))) {
-
-                                                 }
-
-              if (($char eq 'q') | ($char eq 'Q')) {
-                                                 # select quit -> out
-                                                 ReadMode 0; # Reset tty before existing
-                                                 clear_screen();
-                                                 cambio_color(ON_BLACK);
-                                                 cambio_color(WHITE);
-                                                 exit 0;
-                                                   }
-
-              if (exists($instance{$char}))
-                                  {
-                                     $oracle_sid=$instance{$char};
-                                     $char="q";
-                                    }
-                                 else
-                                 {
-                                     $v=$v+2;
-                                     gotoxy(50,$v);
-                                     imprime_color(RED, "Value not valid");
-                                  }
-
-                          }  # char not q
-
- ReadMode 0; # Reset tty before existing
- clear_screen();
- cambio_color(ON_BLACK);
- cambio_color(WHITE);
-
-
-
-### END  @MOD 1.2 26dic2109
-
+# my $dbh = DBI->connect("dbi:Oracle:host=$oracle_server;port=$oracle_port;sid=$oracle_sid",
+#                                            $oracle_user, $oracle_password,{ ora_session_mode => ORA_SYSDBA }) 
+#   or die "$mensajes{'msg2'} " . DBI->errstr;
 
  
  $ENV{ORACLE_SID}=$oracle_sid;
@@ -285,7 +182,7 @@ ReadMode 4;  # turn off control keys
 #
 ######################################################
 
-#init();           # Initialize Term::Cap.
+init();           # Initialize Term::Cap.
 
 cambio_color(ON_BLACK);
 
@@ -331,13 +228,13 @@ my $ora_version=$paramet_inst{"inst_version"};
 
                       if ($lastchar eq 'n')  { Query_num9_i($dbh, $retardo, $oracle_user, $oracle_sid, $ordercol,$cod_sql,$schema,%mensajes); }     
 
-                      if ($lastchar eq 'W')  { Query_num9_i_wa($dbh,$retardo,$oracle_user, $oracle_sid, $ordercol, $cod_sql ,$schema,%mensajes); }     
+                      if ($lastchar eq 'W')  { Query_num9_i_wa($dbh,$retardo,$oracle_user, $oracle_sid, $ordercol, $cod_sql,$schema,%mensajes); }     
 
                       if ($lastchar eq 'l')  { Query_numa($dbh, $retardo, $oracle_user, $oracle_sid, $ordercol,$ordertipo,$schema,%mensajes); }
                       
                       if ($lastchar eq 'd')  { Query_numb($dbh, $retardo, $oracle_user, $oracle_sid, $ordercol,$ordertipo,$schema,%mensajes); }
 
-                      if ($lastchar eq 'g')  { Query_numc($dbh, $retardo, $oracle_user, $oracle_sid, $ordercol,$ordertipo,$ora_version,$schema,%mensajes); }
+                      if ($lastchar eq 'g')  { Query_numc($dbh, $retardo, $oracle_user, $oracle_sid, $ordercol,$ordertipo,$ora_version,$schema, %mensajes); }
 
                       if ($lastchar eq 'f')  { Query_numd($dbh, $retardo, $oracle_user, $oracle_sid, $ordercol,$ordertipo,$ora_version,$schema,%mensajes); }
 
@@ -362,7 +259,7 @@ my $ora_version=$paramet_inst{"inst_version"};
                                                        $filtro="";
                                                        Query_num1($dbh, $retardo, $oracle_user, $oracle_sid, $ordercol,$ordertipo,$filtro,$schema,%mensajes); }
                                              else
-                                                     { my $aux=opcion_nok($paramet_inst{"inst_status"},$schema,%mensajes);
+                                                     { my $aux=opcion_nok($paramet_inst{"inst_status"},%mensajes);
                                                        Query_numh($dbh,$retardo,$oracle_user, $oracle_sid,$ordercol,$ordertipo,$schema,%mensajes);
                                                        $lastchar='h';        }
 
@@ -411,7 +308,7 @@ my $ora_version=$paramet_inst{"inst_version"};
                                                                        }
                                                        Query_num5($dbh, $retardo, $oracle_user, $oracle_sid, $ordercol,$ordertipo,$schema,%mensajes); }
                                              else
-                                                     { my $aux=opcion_nok($paramet_inst{"inst_status"},$schema,%mensajes);
+                                                     { my $aux=opcion_nok($paramet_inst{"inst_status"},%mensajes);
                                                        Query_numh($dbh,$retardo,$oracle_user, $oracle_sid,$ordercol,$ordertipo,$schema,%mensajes);
                                                        $lastchar='h';        }
 
@@ -436,7 +333,7 @@ my $ora_version=$paramet_inst{"inst_version"};
                                                                        }
                                                        Query_num7($dbh, $retardo, $oracle_user, $oracle_sid, $ordercol,$ordertipo,$schema,%mensajes); }
                                              else
-                                                     { my $aux=opcion_nok($paramet_inst{"inst_status"},$schema,%mensajes);
+                                                     { my $aux=opcion_nok($paramet_inst{"inst_status"},%mensajes);
                                                        Query_numh($dbh,$retardo,$oracle_user, $oracle_sid,$ordercol,$ordertipo,$schema,%mensajes);
                                                        $lastchar='h';        }
 
@@ -451,7 +348,7 @@ my $ora_version=$paramet_inst{"inst_version"};
                                                                        }
                                                        Query_num8($dbh, $retardo, $oracle_user, $oracle_sid, $ordercol,$ordertipo,$schema,%mensajes); }
                                              else
-                                                     { my $aux=opcion_nok($paramet_inst{"inst_status"},$schema,%mensajes);
+                                                     { my $aux=opcion_nok($paramet_inst{"inst_status"},%mensajes);
                                                        Query_numh($dbh,$retardo,$oracle_user, $oracle_sid,$ordercol,$ordertipo,$schema,%mensajes);
                                                        $lastchar='h';        }
 
@@ -533,7 +430,7 @@ my $ora_version=$paramet_inst{"inst_version"};
                                                                        }
                                                        Query_nume($dbh, $retardo, $oracle_user, $oracle_sid, $ordercol,$ordertipo,$schema,%mensajes); }
                                              else
-                                                     { my $aux=opcion_nok($paramet_inst{"inst_status"},$schema,%mensajes);
+                                                     { my $aux=opcion_nok($paramet_inst{"inst_status"},%mensajes);
                                                        Query_numh($dbh,$retardo,$oracle_user, $oracle_sid,$ordercol,$ordertipo,$schema,%mensajes);
                                                        $lastchar='h';        }
 
@@ -572,7 +469,7 @@ my $ora_version=$paramet_inst{"inst_version"};
                                                     }
                                                         }
                                              else
-                                                     { my $aux=opcion_nok($paramet_inst{"inst_status"},$schema,%mensajes);
+                                                     { my $aux=opcion_nok($paramet_inst{"inst_status"},%mensajes);
                                                        Query_numh($dbh,$retardo,$oracle_user, $oracle_sid,$ordercol,$ordertipo,$schema,%mensajes);
                                                        $lastchar='h';        }
 
@@ -600,7 +497,8 @@ my $ora_version=$paramet_inst{"inst_version"};
                                 ReadMode 4; 
                                                  }
 
-                                 if ($char eq 'V')  {
+    
+                                if ($char eq 'V')  {
 
                                 if ($option{D}) {
                                 print OUTDBG "DEB. Establezco el schema \n  ";
@@ -620,8 +518,9 @@ my $ora_version=$paramet_inst{"inst_version"};
                                 print "\n";
                           
                                 ReadMode 4;
-                                Query_numh($dbh,$retardo,$oracle_user, $oracle_sid,$ordercol,$ordertipo,$schema,%mensajes); 
+                                Query_numh($dbh,$retardo,$oracle_user, $oracle_sid,$ordercol,$ordertipo,$schema,%mensajes);    
                                                  }
+                            
    
                                if ($char eq 'W')  {
                              if ($option{D}) {
@@ -633,7 +532,7 @@ my $ora_version=$paramet_inst{"inst_version"};
                                print OUTDBG "DEB. Vuelvo de Query_numi \n  ";
                                               }
                               ReadMode 4;
-                              $ret_code=Query_num9_i_wa($dbh,$retardo,$oracle_user, $oracle_sid, $ordercol, $cod_sql ,$schema,%mensajes);                              
+                              $ret_code=Query_num9_i_wa($dbh,$retardo,$oracle_user, $oracle_sid, $ordercol, $cod_sql,$schema,mensajes);                              
                               if ( $ret_code == 0) {
                                                $lastchar='W';
                                                    }
@@ -653,7 +552,7 @@ my $ora_version=$paramet_inst{"inst_version"};
                                print OUTDBG "DEB. Vuelvo de Query_numi \n  ";
                                               }
                               ReadMode 4;
-                             $ret_code=Query_num9_i($dbh,$retardo,$oracle_user, $oracle_sid, $ordercol, $cod_sql ,$schema,%mensajes);
+                             $ret_code=Query_num9_i($dbh,$retardo,$oracle_user, $oracle_sid, $ordercol, $cod_sql,$schema,%mensajes);
                              if ( $ret_code == 0) {
                                                $lastchar='n';
                                                    }
@@ -667,7 +566,7 @@ my $ora_version=$paramet_inst{"inst_version"};
                                print OUTDBG "DEB. Lllamo a Query_numK_i \n  ";
                                              } 
                               ReadMode 0;
-                             $ret_code=Query_numK_i($dbh,$retardo,$oracle_user, $oracle_sid, $ordercol, $cod_sql ,$schema,%mensajes); 
+                             $ret_code=Query_numK_i($dbh,$retardo,$oracle_user, $oracle_sid, $ordercol, $cod_sql,$schema,%mensajes); 
                              if ($option{D}) {
                                print OUTDBG "DEB. Vuelvo de Query_numK_i \n  ";
                                               }

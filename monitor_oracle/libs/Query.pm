@@ -74,7 +74,7 @@ sub cabecera_fil {
    my $op_sist=get_ssoo();
 
    gotoxy(140,2);
-   imprime_color(BLUE,"\@GMH V010819");
+   imprime_color(BLUE,"\@GMH V241019");
    gotoxy(12,2);
    imprime_color(MAGENTA,"$mensajes{'var03'} ");
    gotoxy(20,2);
@@ -133,7 +133,7 @@ sub cabecera {
    my $op_sist=get_ssoo();
 
    gotoxy(140,2);
-   imprime_color(BLUE,"\@GMH V041216");
+   imprime_color(BLUE,"\@GMH V261216");
    gotoxy(12,2);
    imprime_color(MAGENTA,"$mensajes{'var03'} ");
    gotoxy(20,2);
@@ -2509,6 +2509,7 @@ and su.tablespace = ts.tablespace_name order by $order_num $order_tipo")
 
      gotoxy($coordx,$coordy);
      my $busern = $data[1];
+     $busern=" ------- " unless defined($busern);  #@FIX241019
      $busern=trim($busern);
      imprime_color(YELLOW, "$busern");
      $coordx=$coordx+20;
