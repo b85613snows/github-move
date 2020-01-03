@@ -1,0 +1,22 @@
+=head2 Fri Jan  3 08:54:58 2020: C<Module> L<Term::ReadKey|Term::ReadKey>
+
+=over 4
+
+=item *
+
+C<installed into: /home/oracle/oracle_tools/external/monitor_oracle/libs>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 2.33>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
