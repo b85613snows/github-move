@@ -167,35 +167,6 @@ sub cabecera {
 
   }
 
-###########################################################################################
-#  Rutina imprime_color
-#  Escribe un texto en el color indicado
-#
-########################################################################################
-
-sub imprime_color {
-  
-    my ($color, $texto)  = @_;
-
-    print $color, "$texto";  
-
-  }
-
-
-###########################################################################################
-#  Rutina cambio_color
-#  Cambia el color del texto o del background
-#
-########################################################################################
-
-sub cambio_color {
-  
-    my ($color)  = @_;
-
-    print $color;  
-
-  }
-
 
 
 # Two convenience functions.  clear_screen is obvious, and
