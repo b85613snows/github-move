@@ -8,8 +8,8 @@
 # oratab file is read to show the different SID that can 
 # be choosen
 ###########################################################
-use Term::ReadKey;
 use lib './libs/';
+use Term::ReadKey;
 use Arquitectura;
 use Switch;
 use Query;
@@ -68,7 +68,12 @@ my $contrasena="";
 ### END @MOD 1.2 26dic2109
 
 
-
+#######################################################
+#
+# Subroutine executed when the menu option 
+# choose is not valid 
+#
+######################################################
  sub opcion_nok {
 
 my ($razon,%sub_mensajes) = @_;
@@ -90,9 +95,15 @@ my ($razon,%sub_mensajes) = @_;
 
 
 
+####################################################
+#
+# Parameter options
+# if the perl program is called with the -D option 
+# debug file will be used
+#
+####################################################
 
-
- getopts('Dha:',\%option);
+ getopts('D:',\%option);
 
 if ($option{D}) {
     my $debug_file = 'debug.txt';
@@ -111,7 +122,7 @@ my $sist_op=get_ssoo();
 
 ################################################
 #
-#  COPIO .TERMCAP SI NO EXISTE
+#  Copy .termcap if it is not located
 #
 #################################################
 
@@ -132,7 +143,7 @@ if ($sist_op eq 'aix' ) {
  
                                                     }  # END ERROR IF
 
-                                                } #END NO EXISTE TERMCAP EN HOME
+                                                } #END if does not .termcap in home directory
                           }               
 
 
@@ -140,7 +151,8 @@ if ($sist_op eq 'aix' ) {
 
 #################################################
 #
-# LEO FICHERO DE PARAMETROS
+# Reading parameter file
+# Nowadays only lang parameter it is used
 #
 ################################################
 
@@ -156,7 +168,7 @@ if ($sist_op eq 'aix' ) {
 
 #################################################
 #
-# CARGA DINAMICA DEL FICHERO DE MENSAJES
+# Dynamic messages file load
 #
 #################################################
 my $lang = 'message_'.$param{"LANG"}.'.pm';
@@ -189,9 +201,15 @@ if ($option{D}) {
 
 ###  @MOD 1.2 26dic2109
 
+#####################################################################
+#
+# Build first menu with the oracle instances detected in oratab file
+#
+#####################################################################
+
 
 if  (! -e $ficora ) {             ## its not oracle
-                    print "ERROR. There is no oratabl file \n";
+                    print "ERROR. There is no oratab file \n";
                     exit 8;
                     }
 
@@ -222,7 +240,7 @@ imprime_color(BLUE, "$cab");
 $v=$v+3;
 
 
-  foreach  $orainst (keys %instance){
+  foreach  $orainst (sort keys %instance){
      gotoxy(40,$v);
      $v++;
      $cad="  " . $orainst . ".  " . $instance{$orainst} . "\n";
@@ -272,7 +290,12 @@ ReadMode 4;  # turn off control keys
 
 ### END  @MOD 1.2 26dic2109
 
-
+######################################################
+#
+# Connecting to oracle sid using perl api
+# User must own sysdba role. Password is not requested
+#
+######################################################
  
  $ENV{ORACLE_SID}=$oracle_sid;
  my $dbh = DBI->connect("dbi:Oracle:","","",{ ora_session_mode => ORA_SYSDBA }) or die "$mensajes{'msg2'} " . DBI->errstr;
@@ -281,18 +304,17 @@ ReadMode 4;  # turn off control keys
 
 ######################################################
 #
-# INITIALIZE TERMINA
+# Connect succesfull. Building Oracle option menu
 #
 ######################################################
-
-#init();           # Initialize Term::Cap.
 
 cambio_color(ON_BLACK);
 
 my $cabecera="  MENU ORATOP    ";
 gotoxy($coord_x+19,$coord_y+1);
 imprime_color(BLUE, "$cabecera");
-#gotoxy($coord_x+60,$coord_y-3);
+
+$retardo=7.0;       # initial delay
 
 my %paramet_inst=();
 %paramet_inst=Query_instance($dbh,%mensajes);
@@ -304,12 +326,12 @@ my $ora_version=$paramet_inst{"inst_version"};
    $char="";
     Query_numh($dbh,$retardo,$oracle_user, $oracle_sid,$ordercol,$ordertipo,$schema,%mensajes);
    $lastchar='h';
-   while ( $char ne 'q' ) {
+   while ( $char ne 'q' ) {  # While user does not choose q option to leave, we continue in the loop 
 
        ReadMode 4; # turn off control keys   
 
       while (not defined ($char = ReadKey($retardo))) {
-                  #    select(undef, undef, undef, $retardo);
+                 
 
                      if ($lastchar eq 'u')  { Query_num1($dbh, $retardo, $oracle_user, $oracle_sid, $ordercol,$ordertipo,$filtro,$schema,%mensajes); }
 
@@ -350,14 +372,14 @@ my $ora_version=$paramet_inst{"inst_version"};
                                                   }
                                                                               
                         if ($option{D}) {
-                          print OUTDBG "DEB. Selecciono opcion....$char \n  ";
+                          print OUTDBG "DEB. Option selected....$char \n  ";
                                       }
 
                         if ($char eq 'u')  {
                                           if ($paramet_inst{"inst_status"} eq 'OPEN')
                                                      { $lastchar='u'; 
                                                        if ($option{D}) {
-                                                                      print OUTDBG "DEB. Lllamo a Query_num 1 \n  ";
+                                                                      print OUTDBG "DEB. Calling query number 1 \n  ";
                                                                        }
                                                        $filtro="";
                                                        Query_num1($dbh, $retardo, $oracle_user, $oracle_sid, $ordercol,$ordertipo,$filtro,$schema,%mensajes); }
@@ -366,48 +388,48 @@ my $ora_version=$paramet_inst{"inst_version"};
                                                        Query_numh($dbh,$retardo,$oracle_user, $oracle_sid,$ordercol,$ordertipo,$schema,%mensajes);
                                                        $lastchar='h';        }
 
-                                                 }  #end u                       
+                                                 }  #end u option                       
 
                        if ($char eq 'p')  {
                              $lastchar='p';
                              if ($option{D}) {
-                               print OUTDBG "DEB. Lllamo a Query_num2 \n  ";
+                               print OUTDBG "DEB. Calling query number 2 \n  ";
                                              }
                               $filtro=""; 
                              Query_num2($dbh,$retardo,$oracle_user, $oracle_sid,$ordercol,$ordertipo,$filtro,$schema,%mensajes);
                              if ($option{D}) {
-                               print OUTDBG "DEB. Vuelvo de Query_num2 \n  ";
+                               print OUTDBG "DEB. Returning from query number 2 \n  ";
                                               }
-                                           }  # end p
+                                           }  # end p option
                                            
                        if ($char eq 'm')  {
                              $lastchar='m';
                              if ($option{D}) {
-                               print OUTDBG "DEB. Lllamo a Query_num3 \n  ";
+                               print OUTDBG "DEB. Calling query number 3 \n  ";
                                              }
                              Query_num3($dbh,$retardo,$oracle_user, $oracle_sid,$ordercol,$ordertipo,$schema,%mensajes);
                              if ($option{D}) {
-                               print OUTDBG "DEB. Vuelvo de Query_num3 \n  ";
+                               print OUTDBG "DEB. Returning from query number 3 \n  ";
                                               }
-                                           }  # end m
+                                           }  # end m option
 
                        if ($char eq 's')  {
                              $lastchar='s';
                              if ($option{D}) {
-                               print OUTDBG "DEB. Lllamo a Query_num4 \n  ";
+                               print OUTDBG "DEB. Calling query number 4 \n  ";
                                              }
                              $filtro="";
                              Query_num4($dbh,$retardo,$oracle_user, $oracle_sid,$ordercol,$ordertipo,$filtro,$schema,%mensajes);
                              if ($option{D}) {
-                               print OUTDBG "DEB. Vuelvo de Query_num4 \n  ";
+                               print OUTDBG "DEB. Returning from query number 4 \n  ";
                                               }
-                                           }   # end s
+                                           }   # end s option
                                            
                         if ($char eq 'S')  {
                                     if ($paramet_inst{"inst_status"} eq 'OPEN')
                                                      { $lastchar='S';
                                                        if ($option{D}) {
-                                                                      print OUTDBG "DEB. Lllamo a Query_num 5 \n  ";
+                                                                      print OUTDBG "DEB. Calling query number 5 \n  ";
                                                                        }
                                                        Query_num5($dbh, $retardo, $oracle_user, $oracle_sid, $ordercol,$ordertipo,$schema,%mensajes); }
                                              else
@@ -415,24 +437,24 @@ my $ora_version=$paramet_inst{"inst_version"};
                                                        Query_numh($dbh,$retardo,$oracle_user, $oracle_sid,$ordercol,$ordertipo,$schema,%mensajes);
                                                        $lastchar='h';        }
 
-                                                 }  #end S
+                                                 }  #end S option
                    
                         if ($char eq 'w')  {
                              $lastchar='w';
                              if ($option{D}) {
-                               print OUTDBG "DEB. Lllamo a Query_num6 \n  ";
+                               print OUTDBG "DEB. Calling query number 6 \n  ";
                                              }
                              Query_num6($dbh,$retardo,$oracle_user, $oracle_sid,$ordercol,$ordertipo,$schema,%mensajes);
                              if ($option{D}) {
-                               print OUTDBG "DEB. Vuelvo de Query_num6 \n  ";
+                               print OUTDBG "DEB. Returning from query number 6 \n  ";
                                               }
-                                           } # end w
+                                           } # end w option
                                            
                              if ($char eq 'b')  {
                                     if ($paramet_inst{"inst_status"} eq 'OPEN')
                                                      { $lastchar='b';
                                                        if ($option{D}) {
-                                                                      print OUTDBG "DEB. Lllamo a Query_num 7 \n  ";
+                                                                      print OUTDBG "DEB. Calling query number 7 \n  ";
                                                                        }
                                                        Query_num7($dbh, $retardo, $oracle_user, $oracle_sid, $ordercol,$ordertipo,$schema,%mensajes); }
                                              else
@@ -440,14 +462,14 @@ my $ora_version=$paramet_inst{"inst_version"};
                                                        Query_numh($dbh,$retardo,$oracle_user, $oracle_sid,$ordercol,$ordertipo,$schema,%mensajes);
                                                        $lastchar='h';        }
 
-                                                 }  #end b
+                                                 }  #end b option
 
 
                       if ($char eq 't')  {
                                     if ($paramet_inst{"inst_status"} eq 'OPEN')
                                                      { $lastchar='t';
                                                        if ($option{D}) {
-                                                                      print OUTDBG "DEB. Lllamo a Query_num 8 \n  ";
+                                                                      print OUTDBG "DEB. Calling query number 8 \n  ";
                                                                        }
                                                        Query_num8($dbh, $retardo, $oracle_user, $oracle_sid, $ordercol,$ordertipo,$schema,%mensajes); }
                                              else
@@ -455,81 +477,81 @@ my $ora_version=$paramet_inst{"inst_version"};
                                                        Query_numh($dbh,$retardo,$oracle_user, $oracle_sid,$ordercol,$ordertipo,$schema,%mensajes);
                                                        $lastchar='h';        }
 
-                                                 }  #end t
+                                                 }  #end t option
                              
                
                              if ($char eq 'l')  {
                              $lastchar='l';
                              if ($option{D}) {
-                               print OUTDBG "DEB. Lllamo a Query_numa \n  ";
+                               print OUTDBG "DEB. Calling query number a \n  ";
                                              }
                              Query_numa($dbh,$retardo,$oracle_user, $oracle_sid,$ordercol,$ordertipo,$schema,%mensajes);
                              if ($option{D}) {
-                               print OUTDBG "DEB. Vuelvo de Query_numa \n  ";
+                               print OUTDBG "DEB. Returning from query number a \n  ";
                                               }
-                                           } # end l
+                                           } # end l option
 
                               if ($char eq 'd')  {
                              $lastchar='d';
                              if ($option{D}) {
-                               print OUTDBG "DEB. Lllamo a Query_numb \n  ";
+                               print OUTDBG "DEB. Calling query number b \n  ";
                                              }
                              Query_numb($dbh,$retardo,$oracle_user, $oracle_sid,$ordercol,$ordertipo,$schema,%mensajes);
                              if ($option{D}) {
-                               print OUTDBG "DEB. Vuelvo de Query_numb \n  ";
+                               print OUTDBG "DEB. Returning query number b \n  ";
                                               }
-                                           } # end d
+                                           } # end d option 
 
                               if ($char eq 'g')  {
                              $lastchar='g';
                              if ($option{D}) {
-                               print OUTDBG "DEB. Lllamo a Query_numc \n  ";
+                               print OUTDBG "DEB. Calling query num c \n  ";
                                              }
                              Query_numc($dbh,$retardo,$oracle_user, $oracle_sid,$ordercol,$ordertipo,$ora_version,$schema,%mensajes);
                              if ($option{D}) {
-                               print OUTDBG "DEB. Vuelvo de Query_numc \n  ";
+                               print OUTDBG "DEB. Returning from query num c \n  ";
                                               }
-                                           } # end g 
+                                           } # end g option
 
                               if ($char eq 'c')  {
                              $lastchar='c';
                              if ($option{D}) {
-                               print OUTDBG "DEB. Llamo a Query_numf \n  ";
+                               print OUTDBG "DEB. Calling query num f \n  ";
                                              }
                              Query_numf($dbh,$retardo,$oracle_user, $oracle_sid,$ordercol,$ordertipo,$schema,%mensajes);
                              if ($option{D}) {
-                               print OUTDBG "DEB. Vuelvo de Query_numf \n  ";
+                               print OUTDBG "DEB. Returning from query num f \n  ";
                                               }
-                                           } # end c
+                                           } # end c option 
 
                              if ($char eq 'L')  {
                              $lastchar='L';
                              if ($option{D}) {
-                               print OUTDBG "DEB. Llamo a Query_numg \n  ";
+                               print OUTDBG "DEB. Calling query num g \n  ";
                                              }
                              Query_numg($dbh,$retardo,$oracle_user, $oracle_sid,$ordercol,$ordertipo,$schema,%mensajes);
                              if ($option{D}) {
-                               print OUTDBG "DEB. Vuelvo de Query_numg \n  ";
+                               print OUTDBG "DEB. Returning from query num g \n  ";
                                               }
-                                           } # end L 
+                                           } # end L option
                        
                             
                               if ($char eq 'f')  {
                              $lastchar='f';
                              if ($option{D}) {
-                               print OUTDBG "DEB. Lllamo a Query_numd \n  ";
+                               print OUTDBG "DEB. Calling query num d \n  ";
                                              }
                              Query_numd($dbh,$retardo,$oracle_user, $oracle_sid,$ordercol,$ordertipo,$ora_version,$schema,%mensajes);
                              if ($option{D}) {
-                               print OUTDBG "DEB. Vuelvo de Query_numd \n  ";
+                               print OUTDBG "DEB. Returning from query num d \n  ";
                                               }
-                                           } # end f
+                                           } # end f option 
 
                              if ($char eq 'U')  {
                                           if ($paramet_inst{"inst_status"} eq 'OPEN')
                                                      { $lastchar='U';
                                                        if ($option{D}) {
-                                                                      print OUTDBG "DEB. Lllamo a Query_nume \n  ";
+                                                                      print OUTDBG "DEB. Calling query num e \n  ";
                                                                        }
                                                        Query_nume($dbh, $retardo, $oracle_user, $oracle_sid, $ordercol,$ordertipo,$schema,%mensajes); }
                                              else
@@ -537,30 +559,30 @@ my $ora_version=$paramet_inst{"inst_version"};
                                                        Query_numh($dbh,$retardo,$oracle_user, $oracle_sid,$ordercol,$ordertipo,$schema,%mensajes);
                                                        $lastchar='h';        }
 
-                                                 }  #end U
+                                                 }  #end U option 
                
 
                                            
                              if ($char eq 'h')  {
                              $lastchar='h';
                              if ($option{D}) {
-                               print OUTDBG "DEB. Lllamo a Query_numh \n  ";
+                               print OUTDBG "DEB. Calling query num h \n  ";
                                              }
                              Query_numh($dbh,$retardo,$oracle_user, $oracle_sid,$ordercol,$ordertipo,$schema,%mensajes);
                              if ($option{D}) {
-                               print OUTDBG "DEB. Vuelvo de Query_numh \n  ";
+                               print OUTDBG "DEB. Returning from query num h \n  ";
                                               }
                                            }  # end h
 
                               if ($char eq 'x')  {
                                           if ($paramet_inst{"inst_status"} eq 'OPEN')
                                                      { if ($option{D}) {
-                                                            print OUTDBG "DEB. Lllamo a Query_numa_x \n  ";
+                                                            print OUTDBG "DEB. Calling query numa_x \n  ";
                                                                        }
                                                ReadMode 0;
                                                $cod_sql=Query_numa_x($dbh,$retardo,$oracle_user, $oracle_sid,$ordercol,$ordertipo,$schema,%mensajes);
                                                if ($option{D}) {
-                                                   print OUTDBG "DEB. Vuelvo de Query_numa_x \n  ";
+                                                   print OUTDBG "DEB. Returning from query numa_x \n  ";
                                                                }
                                                ReadMode 4;
                                                $ret_code=Query_num9($dbh,$retardo,$oracle_user, $oracle_sid, $ordercol, $cod_sql ,$schema,%mensajes);
@@ -581,7 +603,7 @@ my $ora_version=$paramet_inst{"inst_version"};
                               if ($char eq 'F')  {
 
                                 if ($option{D}) {
-                                print OUTDBG "DEB. Establezco el filtro \n  ";
+                                print OUTDBG "DEB. Setting the filter \n  ";
                                              }
                                 ReadMode 0;
                                 gotoxy(75,20);
@@ -603,7 +625,7 @@ my $ora_version=$paramet_inst{"inst_version"};
                                  if ($char eq 'V')  {
 
                                 if ($option{D}) {
-                                print OUTDBG "DEB. Establezco el schema \n  ";
+                                print OUTDBG "DEB. Setting the schema \n  ";
                                              }
                                 ReadMode 0;
                                 gotoxy(75,20);
@@ -625,12 +647,12 @@ my $ora_version=$paramet_inst{"inst_version"};
    
                                if ($char eq 'W')  {
                              if ($option{D}) {
-                               print OUTDBG "DEB. Lllamo a Query_numi_wa \n  ";
+                               print OUTDBG "DEB. Calling query num9_i_wa \n  ";
                                              }
                              ReadMode 0;
                              $cod_sql=Query_numi_wa($dbh,$retardo,$oracle_user, $oracle_sid,$ordercol,$ordertipo,$schema,%mensajes);
                              if ($option{D}) {
-                               print OUTDBG "DEB. Vuelvo de Query_numi \n  ";
+                               print OUTDBG "DEB. Returning from query numi_wa \n  ";
                                               }
                               ReadMode 4;
                               $ret_code=Query_num9_i_wa($dbh,$retardo,$oracle_user, $oracle_sid, $ordercol, $cod_sql ,$schema,%mensajes);                              
@@ -645,12 +667,12 @@ my $ora_version=$paramet_inst{"inst_version"};
 
                               if ($char eq 'k')  {
                              if ($option{D}) {
-                               print OUTDBG "DEB. Lllamo a Query_numi \n  ";
+                               print OUTDBG "DEB. Calling query numi \n  ";
                                              }
                              ReadMode 0;
                              $cod_sql=Query_numi($dbh,$retardo,$oracle_user, $oracle_sid,$ordercol,$ordertipo,$schema,%mensajes);
                              if ($option{D}) {
-                               print OUTDBG "DEB. Vuelvo de Query_numi \n  ";
+                               print OUTDBG "DEB. Returning from query numi \n  ";
                                               }
                               ReadMode 4;
                              $ret_code=Query_num9_i($dbh,$retardo,$oracle_user, $oracle_sid, $ordercol, $cod_sql ,$schema,%mensajes);
@@ -664,12 +686,12 @@ my $ora_version=$paramet_inst{"inst_version"};
 
                              if (($char eq 'K') & ($lastchar eq 'n'))  {
                              if ($option{D}) {
-                               print OUTDBG "DEB. Lllamo a Query_numK_i \n  ";
+                               print OUTDBG "DEB. Calling query numK_i \n  ";
                                              } 
                               ReadMode 0;
                              $ret_code=Query_numK_i($dbh,$retardo,$oracle_user, $oracle_sid, $ordercol, $cod_sql ,$schema,%mensajes); 
                              if ($option{D}) {
-                               print OUTDBG "DEB. Vuelvo de Query_numK_i \n  ";
+                               print OUTDBG "DEB. Returning from query numK_i \n  ";
                                               }
                               ReadMode 4;
                              if ( $ret_code == 0) {
@@ -685,37 +707,37 @@ my $ora_version=$paramet_inst{"inst_version"};
 
 
                        if ($char eq 'z')  {
-                                          $ordercol++;
+                                          $ordercol++;        # Changing the column order
                                          }
                        if ($char eq 'Z')  {
-                                          $ordercol--;
+                                          $ordercol--;        # Changing the column order    
                                          }
                        if ($char eq 'r')  {
-                                          $retardo=$retardo+1.0;
+                                          $retardo=$retardo+1.0;                  # Changing the delay 
                                           if ($retardo > 9) { $retardo=9.0 }
                                          }
                        if ($char eq 'R')  {
-                                          $retardo=$retardo-1.0;
+                                          $retardo=$retardo-1.0;                  # Changing the delay
                                           if ($retardo < 1) { $retardo=1.0 }
                                          }
 
-                       if ($char eq 'O')  {
+                       if ($char eq 'O')  {                                        # Changing to ascending/descending order 
                                            if ($ordertipo eq "DESC") { $ordertipo = "ASC"; }
                                               else {  $ordertipo = "DESC"; }
                                          }
 
-                        if (($char eq '<') && ($lastchar eq 'y')) {
+                        if (($char eq '<') && ($lastchar eq 'y')) {     # Scroll up/down       
                                          $ordercol=$ordercol+45;
                                          }
 
-                       if (($char eq '>') && ($lastchar eq 'y')) {
+                       if (($char eq '>') && ($lastchar eq 'y')) {       # Scroll up/down 
                                          $ordercol=$ordercol-45;
                                          } 
 
                              }  # end q
  $dbh->disconnect;
 
-   ReadMode 0; # Reset tty befor existing 
+   ReadMode 0; # Reset tty before existing 
 
  clear_screen();
  

@@ -8,21 +8,21 @@ package Arquitectura;
     BEGIN {
         require Exporter;
 
-        # establecer la versión para la comprobación de versión
+        # Package version
         our $VERSION     = 1.00;
 
-        # heredar de Exporter para exportar funciones y variables
+        # Inherance to export functions and variables
         our @ISA         = qw(Exporter);
 
-        # funciones y variables que se exportan de forma predeterminada
+        # Predetermined functions and variables exported
         our @EXPORT      = qw(get_ssoo trim ltrim rtrim initpila insertpila extraepila $dato $res $string $res_ssoo @pila leoparam %hash_param get_dia $dia 
                             list_environment get_hora $hora);
 
-        # funciones y variables que se exportan de forma opcional
+        # Optional functions and variables
         our @EXPORT_OK   = qw($Var1 %Hash1 func3);
     }
 
-    # las variables globales de paquete exportadas van aquí
+    # Package global variables
     our $Var1    = '';
     our $res_ssoo = '';
     our $res ='';
@@ -32,28 +32,31 @@ package Arquitectura;
     our $dia='';
     our $hora='';
 
-    # las variables globales de paquete no exportadas van aquí
-    # (son accesibles mediante $Mi::Modulo::cosa)
+    # Privated global variables ( not exported )
+    # (access through $Mi::Modulo::cosa)
     our @otras    = ();
     our $cosa   = '';
     our @pila = ();
     our %hash_param = ();
     
 
-    # las variables léxicas privadas del archivo van aquí, antes que las funciones que las usan
+    # private lexical variables
     my $var_priv    = '';
     my %hash_secreto = ();
    
 
-    # aquí va una función privada del archivo, como clausura
-    # puede llamarse mediante $func_priv->();
+    # Private functions
+    # calling through $func_priv->();
  
    my $func_priv = sub {
         
     };
 
-    
-
+##############################################################################
+#
+# Subroutine list_environment    
+#
+##############################################################################
 
     sub list_environment
             {
@@ -69,8 +72,10 @@ package Arquitectura;
              }    
 
 ################################################################################
-#### Perl get_ssoo devuelve el sistema operativo
-##################################################################################
+#
+## Subroutine  get_ssoo 
+#
+################################################################################
 
     sub get_ssoo      {
 
@@ -90,8 +95,11 @@ package Arquitectura;
 	return ($res_ssoo)
                    }
 
-################################################################################
-#### Perl get_dia devuelve el dia
+#################################################################################
+#
+# Subroutine get_dia
+# Return date
+#
 ##################################################################################
 
     sub get_dia      {
@@ -102,8 +110,11 @@ package Arquitectura;
                    }
 
 
-################################################################################
-#### Perl get_hora devuelve la hora
+#################################################################################
+#
+# Subroutine get_hora 
+# Return time
+#
 ##################################################################################
 
     sub get_hora      {
@@ -116,8 +127,11 @@ package Arquitectura;
                    }
 
 
-################################################################################
-#### Perl initpila inicializa la pila
+#################################################################################
+#
+# Subroutine Perl initpila 
+# Initialize stack 
+#
 ##################################################################################
 
 
@@ -130,9 +144,11 @@ sub initpila
  }
 
 ################################################################################
-#### Perl insertpila inserta elemento en la pila
-#######
-########################################################################### 
+#
+# Subroutine  insertpila. 
+# Insert an element into the stack
+#
+################################################################################ 
 
 sub insertpila
  {
@@ -142,8 +158,11 @@ sub insertpila
  }
 
 ################################################################################
-#### Perl extraepila extrae elemento de la pila
-##################################################################################
+#
+# Subroutine  extraepila 
+# Pop an element from the stack 
+#
+################################################################################
 
 sub extraepila
  {
@@ -153,7 +172,9 @@ sub extraepila
  }
 
 ################################################################################
+#
 #### Perl trim function to remove whitespace from the start and end of the string
+#
 ##################################################################################
 sub trim($)
 {
@@ -164,7 +185,9 @@ sub trim($)
  return $string;
    }
 #################################################
+#
 # Left trim function to remove leading whitespace
+#
 #################################################
 sub ltrim($)
  {
@@ -173,7 +196,9 @@ sub ltrim($)
   return $string;
  }
 ##################################################
+#
 # Right trim function to remove trailing whitespace
+#
 ##################################################
 sub rtrim($)
  {
@@ -183,7 +208,10 @@ sub rtrim($)
  }
 
 ##################################################
+#
+# Subroutine leoparam 
 # Read File of param. Return a Hash with the variables
+#
 ##################################################
 sub leoparam($)
  {
@@ -221,7 +249,7 @@ sub leoparam($)
  }
   
  
-    END {  }       # el código de limpieza del módulo va aquí (destructor global)
+    END {  }       # Global destroyer
 
 
 1;
